@@ -1,0 +1,129 @@
+swagger: "2.0"
+info:
+  description: "This microservice handles requests directed to the Follows Database"
+  version: "1.0.0"
+  title: "Follows Microservice"
+schemes:
+- "http"
+paths:
+  /followers-list/{writer_id}:
+    get:
+      summary: "Returns followers list"
+      description: "Return the list of ids and full names of the follower of the given id"
+      operationId: "followers-list"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "writer_id"
+        in: "path"
+        description: "Writer's id"
+        required: true
+        type: "integer"
+      responses:
+        '200':
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Followers_List"
+        '404':
+          description: "Page not found"
+          
+  /following-list/{writer_id}:
+    get:
+      summary: "Returns following authors list"
+      description: "Return the list of ids of the following authors of the given id"
+      operationId: "following-list"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "writer_id"
+        in: "path"
+        description: "Writer's id"
+        required: true
+        type: "integer"
+      responses:
+        '200':
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Following_List"
+        '404':
+          description: "Page not found"
+          
+  /follow:
+    post:
+      summary: "Follow author operation"
+      operationId: "follow"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/Follow"
+      responses:
+        '200':
+          description: "Following"
+        '400':
+          description: "Invalid request"
+    delete:
+      summary: "Unfollow author operation"
+      operationId: "unfollow"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/Follow"
+      responses:
+        '200':
+          description: "Signed up"
+        '400':
+          description: "Invalid request"
+          
+definitions:
+  Follow:
+    type: "object"
+    properties:
+      user_id:
+        type: "integer"
+      followee_id:
+        type: "integer"
+    required:
+    - "user_id"
+    - "followee_id"
+    additionalProperties: false
+  Followers_List:
+    type: "object"
+    properties:
+      followers:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            follower_id:
+              type: "integer"
+            follower_name:
+              type: "string"
+          required: 
+          - "follower_id"
+          - "follower_name"
+          additionalProperties: false
+    required:
+    - "followers"
+    additionalProperties: false
+  Following_List:
+    type: "object"
+    properties:
+      following_ids:
+        type: "array"
+        items:
+          type: "integer"
+    required:
+    - "following_ids"
+    additionalProperties: false
