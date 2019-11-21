@@ -6,7 +6,7 @@ info:
 schemes:
 - "http"
 paths:
-  /followers-list/{writer_id}:
+  /followers-list/{user_id}:
     get:
       summary: "Returns followers list"
       description: "Return the list of ids and full names of the follower of the given id"
@@ -14,9 +14,9 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "writer_id"
+      - name: "user_id"
         in: "path"
-        description: "Writer's id"
+        description: "User id"
         required: true
         type: "integer"
       responses:
@@ -27,7 +27,7 @@ paths:
         '404':
           description: "Page not found"
           
-  /following-list/{writer_id}:
+  /following-list/{user_id}:
     get:
       summary: "Returns following authors list"
       description: "Return the list of ids of the following authors of the given id"
@@ -35,9 +35,9 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "writer_id"
+      - name: "user_id"
         in: "path"
-        description: "Writer's id"
+        description: "User id"
         required: true
         type: "integer"
       responses:
@@ -79,7 +79,7 @@ paths:
         name: "body"
         required: true
         schema:
-          $ref: "#/definitions/Follow"
+          $ref: "#/definitions/Unfollow"
       responses:
         '200':
           description: "Signed up"
@@ -88,6 +88,20 @@ paths:
           
 definitions:
   Follow:
+    type: "object"
+    properties:
+      user_id:
+        type: "integer"
+      user_name:
+        type: "string"
+      followee_id:
+        type: "integer"
+    required:
+    - "user_id"
+    - "user_name"
+    - "followee_id"
+    additionalProperties: false
+  Unfollow:
     type: "object"
     properties:
       user_id:

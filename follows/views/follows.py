@@ -8,6 +8,56 @@ from datetime import datetime
 
 follows = SwaggerBlueprint('follows', 'follows', swagger_spec='./follows/static/follows-specs.yaml')
 
+"""
+This endpoint returns the followers list with their id and name
+"""
+@follows.operation('followers-list')
+def my_followers(user_id):
+    followers = (db.session.query(Follow).filter(Follow.user_id == user_id)
+                                           .filter(Follow.followed_by_id != user_id)
+                                           .all())
+
+    return jsonify({'followers': [{'follower_id': obj.followed_by_id, 'follower_name': obj.followed_by_name} for obj in followers]})
+
+"""
+This endpoint returns the following list ids
+"""
+@follows.operation('following-list')
+def my_following(user_id):
+    following = (db.session.query(Follow).filter(Follow.followed_by_id == user_id)
+                                           .all())
+
+    return jsonify({'following_ids': [obj.user_id for obj in following]})
+
+"""
+This endpoint creates an entry in the db allowing a user to follow another user
+"""
+@follows.operation('follow')
+def follow():
+    if general_validator('follow', request):
+        json_data= request.get_json()
+        user_id= json_data['user_id']
+        user_name= json_data['user_name']
+        followee_id= json_data['followee_id']
+        db.session.add(Follow(followee_id, user_id, user_name))
+        db.session.commit()
+        return "Following", 200
+    else:
+        return abort(400)
+
+"""
+This endpoint deletes a follow entry
+"""
+@follows.operation('unfollow')
+def unfollow():
+    if general_validator('unfollow', request):
+        json_data= request.get_json()
+        user_id= json_data['user_id']
+        followee_id= json_data['followee_id']
+        Follow.query.filter(Follow.user_id == followee_id, Follow.followed_by_id == user_id).delete()
+        return "Unfollowed", 200
+    else:
+        return abort(400)
 
 def general_validator(op_id, request):
     schema= follows.spec['paths']
@@ -25,59 +75,3 @@ def general_validator(op_id, request):
                         return False
                 else:
                      return True
-
-"""
-This route lets a logged user follow another user.
-
-@users.route('/wall/<int:author_id>/follow', methods=['GET'])
-@login_required
-def follow(author_id):
-    message = ''
-    if author_id==current_user.id:
-        message= "Cannot follow yourself"
-    else:
-        author = User.query.filter_by(id = author_id).first()
-        if author is None:
-            abort(404)
-            
-        db.session.add(Follow(author_id, current_user.id))
-        try:
-            db.session.commit()
-            message = "Following!"
-        except IntegrityError:
-            db.session.rollback()
-            message = "Already following!"
-    return render_template('message.html', message = message)
-"""
-"""
-This route lets a logged user unfollow a followed user.
-
-@users.route('/wall/<int:author_id>/unfollow', methods=['GET'])
-@login_required
-def unfollow(author_id):
-    message = ''
-    if author_id==current_user.id:
-        message= "Cannot unfollow yourself"
-    else:
-        author = User.query.filter_by(id = author_id).first()
-        if author is None:
-            abort(404)
-        if isFollowing(author_id, current_user.id) :
-            Follow.query.filter(Follow.user_id == author_id, Follow.followed_by_id == current_user.id).delete()
-            db.session.commit()
-            message = "Unfollowed!"
-        else:
-            message = "You were not following that particular user!"
-    return render_template('message.html', message = message)
-"""
-"""
-This route lets a logged user see his own followers.
-"""
-
-@follows.operation('followers-list')
-def my_followers(writer_id):
-    followers = (db.session.query(Follow).filter(Follow.user_id == writer_id)
-                                           .filter(Follow.followed_by_id != writer_id)
-                                           .all())
-
-    return jsonify({'followers': [{'follower_id': obj.followed_by_id, 'follower_name': obj.followed_by_name} for obj in followers]})

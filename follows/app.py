@@ -29,7 +29,9 @@ def start(test = False):
         user = q.first()
         if user is None:
             example = Follow(1, 2, "Pippo")
+            example2 = Follow(3, 2, "Pippo")
             db.session.add(example)
+            db.session.add(example2)
             db.session.commit()
 
     return app
