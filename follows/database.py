@@ -13,10 +13,9 @@ db = SQLAlchemy()
 
 class Follow(db.Model):
     __tablename__ = 'follow'
-
     user_id = db.Column(db.Integer, primary_key=True)
     followed_by_id= db.Column(db.Integer, primary_key=True)
-    followed_by_name= db.Column(db.Column(db.Unicode(128)))
+    followed_by_name= db.Column(db.Unicode(128))
 
     def __init__(self, user, follower, follower_name, *args, **kw):
         self.user_id = user

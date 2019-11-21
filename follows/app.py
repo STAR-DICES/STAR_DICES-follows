@@ -28,10 +28,7 @@ def start(test = False):
         q = db.session.query(Follow)
         user = q.first()
         if user is None:
-            example = Follow()
-            example.user_id = 1
-            example.followed_by_id= 2
-            example.followed_by_name="Pinco pallino"
+            example = Follow(1, 2, "Pippo")
             db.session.add(example)
             db.session.commit()
 

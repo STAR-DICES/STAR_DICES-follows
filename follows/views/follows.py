@@ -75,14 +75,9 @@ This route lets a logged user see his own followers.
 """
 
 @follows.operation('followers-list')
-def my_followers():
-    json_data= request.json()
-    writer_id= json_data['writer_id']
+def my_followers(writer_id):
     followers = (db.session.query(Follow).filter(Follow.user_id == writer_id)
                                            .filter(Follow.followed_by_id != writer_id)
                                            .all())
-    response= jsonify({'followers': []})
-    for obj in followers:
-        response['followers'].add(jsonify({'follower_id': obj.followed_by_id, 'follower_name': obj.followed_by_name}))
 
-    return response
+    return jsonify({'followers': [{'follower_id': obj.followed_by_id, 'follower_name': obj.followed_by_name} for obj in followers]})
