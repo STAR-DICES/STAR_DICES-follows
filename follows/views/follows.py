@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from jsonschema import validate, ValidationError
 from datetime import datetime
 
-follows = SwaggerBlueprint('follows', 'follows', swagger_spec='./follows/views/follows-specs.yaml')
+follows = SwaggerBlueprint('follows', 'follows', swagger_spec='follows-specs.yaml')
 
 """
 This endpoint returns the followers list with their id and name
