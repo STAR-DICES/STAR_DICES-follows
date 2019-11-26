@@ -40,7 +40,11 @@ def follow():
         user_name= json_data['user_name']
         followee_id= json_data['followee_id']
         db.session.add(Follow(followee_id, user_id, user_name))
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            abort(409)
         return "Following", 200
     else:
         return abort(400)
@@ -54,8 +58,13 @@ def unfollow():
         json_data= request.get_json()
         user_id= json_data['user_id']
         followee_id= json_data['followee_id']
-        Follow.query.filter(Follow.user_id == followee_id, Follow.followed_by_id == user_id).delete()
-        return "Unfollowed", 200
+        follow = Follow.query.filter(Follow.user_id == followee_id, Follow.followed_by_id == user_id)
+        if follow.first() is not None:
+            follow.delete()
+            db.session.commit()
+            return "Unfollowed", 200
+        else:
+            abort(409)
     else:
         return abort(400)
 
