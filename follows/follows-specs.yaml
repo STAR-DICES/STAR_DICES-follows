@@ -65,6 +65,8 @@ paths:
       responses:
         '200':
           description: "Following"
+        '401':
+          description: "Cannot follow yourself"
         '400':
           description: "Invalid request"
     delete:
@@ -83,6 +85,8 @@ paths:
       responses:
         '200':
           description: "Signed up"
+        '401':
+          description: "Cannot unfollow yourself"
         '400':
           description: "Invalid request"
           

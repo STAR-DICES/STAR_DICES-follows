@@ -39,6 +39,8 @@ def follow():
         user_id= json_data['user_id']
         user_name= json_data['user_name']
         followee_id= json_data['followee_id']
+        if(user_id == followee_id):
+            return "Cannot follow yourself", 401
         db.session.add(Follow(followee_id, user_id, user_name))
         db.session.commit()
         return "Following", 200
@@ -54,6 +56,8 @@ def unfollow():
         json_data= request.get_json()
         user_id= json_data['user_id']
         followee_id= json_data['followee_id']
+        if(user_id == followee_id):
+            return "Cannot unfollow yourself", 401
         Follow.query.filter(Follow.user_id == followee_id, Follow.followed_by_id == user_id).delete()
         return "Unfollowed", 200
     else:
