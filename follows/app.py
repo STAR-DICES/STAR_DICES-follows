@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+
 from follows.views import blueprints
 from follows.database import db, Follow
 from flakon import create_app
