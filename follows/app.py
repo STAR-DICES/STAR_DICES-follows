@@ -31,8 +31,10 @@ def start(test = False):
         if user is None:
             example = Follow(1, 2, "Pippo")
             example2 = Follow(3, 2, "Pippo")
+            example3 = Follow(2, 1, "Admin")
             db.session.add(example)
             db.session.add(example2)
+            db.session.add(example3)
             db.session.commit()
 
     return app
