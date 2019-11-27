@@ -26,9 +26,6 @@ This endpoint returns the following list ids
 """
 @follows.operation('following-list')
 def my_following(user_id):
-    user_id = int_validator(user_id)
-    if user_id  is None:
-        return "Not Found!", 404 
     following = (db.session.query(Follow).filter(Follow.followed_by_id == user_id)
                                            .all())
 

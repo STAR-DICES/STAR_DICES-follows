@@ -34,9 +34,9 @@ class TestAuth(TestCase):
 
     def test_double_follow(self):
         data = {
-            'user_id': 1,
-            'followee_id': 2,
-            'user_name': 'Pippo'
+            'user_id': 2,
+            'followee_id': 1,
+            'user_name': 'Admin'
         }
         r = self.client.post('/follow', json=data)
         self.assertEqual(r.status_code, 409)
