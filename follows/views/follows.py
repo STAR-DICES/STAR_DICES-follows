@@ -13,6 +13,8 @@ This endpoint returns the followers list with their id and name
 """
 @follows.operation('followers-list')
 def my_followers(user_id):
+    if user_id  is None:
+        return "Not Found!", 404 
     followers = (db.session.query(Follow).filter(Follow.user_id == user_id)
                                            .filter(Follow.followed_by_id != user_id)
                                            .all())
@@ -24,6 +26,9 @@ This endpoint returns the following list ids
 """
 @follows.operation('following-list')
 def my_following(user_id):
+    user_id = int_validator(user_id)
+    if user_id  is None:
+        return "Not Found!", 404 
     following = (db.session.query(Follow).filter(Follow.followed_by_id == user_id)
                                            .all())
 
@@ -88,3 +93,10 @@ def general_validator(op_id, request):
                         return False
                 else:
                      return True
+
+def int_validator(string):
+    try:
+        value= int(string)
+    except (ValueError, TypeError):
+        return None
+    return value
