@@ -90,10 +90,3 @@ def general_validator(op_id, request):
                         return False
                 else:
                      return True
-
-def int_validator(string):
-    try:
-        value= int(string)
-    except (ValueError, TypeError):
-        return None
-    return value
