@@ -13,6 +13,8 @@ This endpoint returns the followers list with their id and name
 """
 @follows.operation('followers-list')
 def my_followers(user_id):
+    if user_id  is None:
+        return "Not Found!", 404 
     followers = (db.session.query(Follow).filter(Follow.user_id == user_id)
                                            .filter(Follow.followed_by_id != user_id)
                                            .all())
@@ -24,6 +26,9 @@ This endpoint returns the following list ids
 """
 @follows.operation('following-list')
 def my_following(user_id):
+    user_id = int_validator(user_id)
+    if user_id  is None:
+        return "Not Found!", 404 
     following = (db.session.query(Follow).filter(Follow.followed_by_id == user_id)
                                            .all())
 
@@ -42,7 +47,11 @@ def follow():
         if(user_id == followee_id):
             return "Cannot follow yourself", 401
         db.session.add(Follow(followee_id, user_id, user_name))
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            abort(409)
         return "Following", 200
     else:
         return abort(400)
@@ -58,8 +67,13 @@ def unfollow():
         followee_id= json_data['followee_id']
         if(user_id == followee_id):
             return "Cannot unfollow yourself", 401
-        Follow.query.filter(Follow.user_id == followee_id, Follow.followed_by_id == user_id).delete()
-        return "Unfollowed", 200
+        follow = Follow.query.filter(Follow.user_id == followee_id, Follow.followed_by_id == user_id)
+        if follow.first() is not None:
+            follow.delete()
+            db.session.commit()
+            return "Unfollowed", 200
+        else:
+            abort(409)
     else:
         return abort(400)
 
@@ -79,3 +93,10 @@ def general_validator(op_id, request):
                         return False
                 else:
                      return True
+
+def int_validator(string):
+    try:
+        value= int(string)
+    except (ValueError, TypeError):
+        return None
+    return value

@@ -1,77 +1,68 @@
-from follows.views.test.TestHelper import TestHelper
+import unittest
+import json
 
-class TestAuth(TestHelper):
+from follows.app import start
+from flask_testing import TestCase
 
-    def test_login_required_unfollow(self):
-        reply = self.client.get('/wall/1/unfollow')
-        self.assertEqual(reply.status_code, 401)
 
-        reply = self._login("example@example.com", "admin")
-        self.assertEqual(reply.status_code, 302)
+class TestAuth(TestCase):
+    def create_app(self):
+        self.app = start(test=True)
+        self.context = self.app.app_context()
+        self.client = self.app.test_client()
+        return self.app
 
-        reply =  self.client.get('/wall/1/unfollow')
-        self.assertEqual(reply.status_code, 200)
-        self.assert_template_used("message.html")
-        self.assert_context("message", "Cannot unfollow yourself")
+    def tearDown(self):
+        self.app = None
+        self.context = None
+        self.client = None
 
-    def test_login_required_my_followers(self):
-        reply = self.client.get('/my_wall/followers')
-        self.assertEqual(reply.status_code, 401)
+    def test_wrong_parameters_follow(self):
+        data = {
+            'user_id': 1,
+            'followee_id': 2
+        }
+        r = self.client.post('/follow', json=data)
+        self.assertEqual(r.status_code, 400)
 
-        reply = self._login("example@example.com", "admin")
-        self.assertEqual(reply.status_code, 302)
+    def test_wrong_parameters_unfollow(self):
+        data = {
+            'followee_id': 2
+        }
+        r = self.client.delete('/follow', json=data)
+        self.assertEqual(r.status_code, 400)
 
-        reply =  self.client.get('/my_wall/followers')
-        self.assertEqual(reply.status_code, 200)
-        self.assert_template_used("myfollowers.html")
+    def test_double_follow(self):
+        data = {
+            'user_id': 1,
+            'followee_id': 2,
+            'user_name': 'Pippo'
+        }
+        r = self.client.post('/follow', json=data)
+        self.assertEqual(r.status_code, 409)
 
-    def test_nonexistant_public_wall(self):
-        reply = self._login("example@example.com", "admin")
-        self.assertEqual(reply.status_code, 302)
+    def test_nonexistant_unfollow(self):
+        data = {
+            'user_id': 10,
+            'followee_id': 11,
+        }
+        r = self.client.delete('/follow', json=data)
+        self.assertEqual(r.status_code, 409)
 
-        reply =  self.client.get('/wall/2')
-        self.assertEqual(reply.status_code, 200)
-        self.assert_template_used("message.html")
-        self.assert_context("message", "Ooops.. Writer not found!")
+    def test_self_follow(self):
+        data = {
+            'user_id': 10,
+            'followee_id': 10,
+            'user_name': 'test'
+        }
+        r = self.client.post('/follow', json=data)
+        self.assertEqual(r.status_code, 401)
 
-    def test_follow_nonexistant_user(self):
-        reply = self._login("example@example.com", "admin")
-        self.assertEqual(reply.status_code, 302)
+    def test_self_unfollow(self):
+        data = {
+            'user_id': 10,
+            'followee_id': 10,
+        }
+        r = self.client.delete('/follow', json=data)
+        self.assertEqual(r.status_code, 401)
 
-        reply =  self.client.get('/wall/2/follow')
-        self.assertEqual(reply.status_code, 404)
-
-    def test_unfollow_nonexistant_user(self):
-        reply = self._login("example@example.com", "admin")
-        self.assertEqual(reply.status_code, 302)
-
-        reply =  self.client.get('/wall/2/unfollow')
-        self.assertEqual(reply.status_code, 404)
-
-    def test_follow_unfollow_existing_user(self):
-        reply = self._signup("test123@test.com", "verysecurepassword", "Test", "Script", "10/10/1999")
-        self.assertEqual(reply.status_code, 302)
-
-        reply = self._login("test123@test.com", "verysecurepassword", True)
-        self.assertEqual(reply.status_code, 200)
-        self.assert_template_used("home.html")
-
-        reply =  self.client.get('/wall/1/follow')
-        self.assertEqual(reply.status_code, 200)
-        self.assert_template_used("message.html")
-        self.assert_context("message", "Following!")
-
-        reply =  self.client.get('/wall/1/follow')
-        self.assertEqual(reply.status_code, 200)
-        self.assert_template_used("message.html")
-        self.assert_context("message", "Already following!")
-
-        reply =  self.client.get('/wall/1/unfollow')
-        self.assertEqual(reply.status_code, 200)
-        self.assert_template_used("message.html")
-        self.assert_context("message", "Unfollowed!")
-
-        reply =  self.client.get('/wall/1/unfollow')
-        self.assertEqual(reply.status_code, 200)
-        self.assert_template_used("message.html")
-        self.assert_context("message", "You were not following that particular user!")
